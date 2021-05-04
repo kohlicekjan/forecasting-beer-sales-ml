@@ -80,8 +80,8 @@ FROM (SELECT [Country]
         AND [AvgTemp] IS NOT NULL
         AND [AvgRain] IS NOT NULL
         AND [AvgSun] IS NOT NULL
-        AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
-        --AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
+        --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
+        AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
 --WHERE  
     
@@ -91,38 +91,6 @@ GROUP BY t.[Country], t.[Year], t.[Week], t.[Workdays], t.SHORT_SKU, t.IsLockdow
 
 
 --SELECT * FROM @Temp
-
--- SELECT
---     t.[SkuShort]
---     , t.[Country]
---     , t.[Year] 
---     , t.[Week]
---     , t.[NumberWorkdays]
---     , t.[AvgTemp]
---     , t.[AvgRain]
---     , t.[AvgSun]
---     , t.[IsLockdown]
---     , t.[PdtHl]
---     , w1.PdtHl AS PrevWeekPdtHl1
---     , t.[BgtHl]
---     , w1.[BgtHl] AS PrevWeekBgtHl1
---     , t.SalesHl
---     , w1.SalesHl AS PrevWeekSalesHl1
---     , w2.SalesHl AS PrevWeekSalesHl2
--- FROM @Temp AS t
---     LEFT JOIN @Temp AS w1 ON 
---         w1.SkuShort = t.SkuShort
---         AND w1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
---         AND w1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52 END 
---     LEFT JOIN @Temp AS w2 ON  
---         w2.SkuShort = t.SkuShort
---         AND w2.[Year] = CASE WHEN (t.Week - 2) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
---         AND w2.[Week] = CASE WHEN (t.Week - 2) > 0 THEN (t.Week -2) 
---                             WHEN (t.Week - 2) = 0 THEN 52 
---                             ELSE 51  END 
--- --WHERE [Year] NOT IN (2018, 2021)
--- ORDER BY  t.[Country], t.[Year], t.[Week]
-
 
 SELECT
     [SkuShort]
