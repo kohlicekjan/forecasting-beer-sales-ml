@@ -38,48 +38,46 @@ SELECT --t.*
     , SUM([LF1_HL]) 
     , SUM(t.[SalesHl]) AS RESULT
 
-FROM (SELECT [Country]
-      , [Calweek]
-      , [Year]
-      , [Week]
-      , [Workdays]
-      , [GT_SKU]
-      , [DP_SKU]
-      , SUBSTRING([DP_SKU], 1, 5) AS 'SHORT_SKU'
-      , [Description]
-      , [Brand]
-      , [SubBrand]
-      , [ProductGroup]
-      , [PrimaryPack]
-      , [LF1_HL]
-      , [Sales_HL] 
-      , CASE WHEN [Sales_HL] > 0 THEN [Sales_HL]   
+FROM (SELECT mlt.[Country]
+      , mlt.[Calweek]
+      , mlt.[Year]
+      , mlt.[Week]
+      , mlt.[Workdays]
+      , mlt.[GT_SKU]
+      , mlt.[DP_SKU]
+      , SUBSTRING(mlt.[DP_SKU], 1, 5) AS 'SHORT_SKU'
+      , mlt.[Description]
+      , mlt.[Brand]
+      , mlt.[SubBrand]
+      , mlt.[ProductGroup]
+      , mlt.[PrimaryPack]
+      , mlt.[LF1_HL]
+      , mlt.[Sales_HL] 
+      , CASE WHEN mlt.[Sales_HL] > 0 THEN mlt.[Sales_HL]   
         ELSE 0  
         END AS 'SalesHl'
-      , [PDT_HL]
-      , [BGT_HL]
-      , [AvgTemp]
-      , [AvgRain]
-      , [AvgSun]
+      , mlt.[PDT_HL]
+      , mlt.[BGT_HL]
+      , mlw.[AvgTemp]
+      , mlw.[AvgRain]
+      , mlw.[AvgSun]
       , CASE 
-        WHEN [Country] = 'CZ' AND [Year] = 2020 AND [Week] BETWEEN 12 AND 21 THEN 1
-        WHEN [Country] = 'CZ' AND [Year] = 2020 AND [Week] BETWEEN 42 AND 53  THEN 1
-        WHEN [Country] = 'CZ' AND [Year] = 2021 THEN 1
+        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 12 AND 21 THEN 1
+        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 42 AND 53  THEN 1
+        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2021 THEN 1
 
-        --WHEN [Country] = 'SK' AND [Year] = 2020 AND [Week] BETWEEN 12 AND 21 THEN 1
-        --WHEN [Country] = 'SK' AND [Year] = 2020 AND [Week] BETWEEN 42 AND 53  THEN 1
-        --WHEN [Country] = 'SK' AND [Year] = 2021 THEN 1
+        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 12 AND 21 THEN 1
+        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 42 AND 53  THEN 1
+        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2021 THEN 1
         ELSE 0  
         END AS 'IsLockdown'
-    FROM [FC_Tool].[dbo].[ML_Table]
+    FROM [FC_Tool].[dbo].[ML_Table] AS mlt
+    INNER JOIN [FC_Tool].[dbo].[ML_Weather] AS mlw ON mlw.[Calweek] = mlt.[Calweek]
     WHERE 
-        [Country] = 'CZ'
-        AND [DP_SKU] IS NOT NULL
-        AND [PrimaryPack] IS NOT NULL
-        AND [Sales_HL] IS NOT NULL
-        AND [AvgTemp] IS NOT NULL
-        AND [AvgRain] IS NOT NULL
-        AND [AvgSun] IS NOT NULL
+        --mlt.[Country] = 'CZ' AND
+        mlt.[DP_SKU] IS NOT NULL
+        AND mlt.[PrimaryPack] IS NOT NULL
+        AND mlt.[Sales_HL] IS NOT NULL
         --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
         AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
