@@ -78,8 +78,8 @@ FROM (SELECT mlt.[Country]
         mlt.[DP_SKU] IS NOT NULL
         AND mlt.[PrimaryPack] IS NOT NULL
         AND mlt.[Sales_HL] IS NOT NULL
-        --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
-        AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
+        AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
+        --AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
 --WHERE  
     
@@ -110,14 +110,7 @@ SELECT
         AND w1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
         AND w1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END 
         ) AS PrevWeekPdtHl1
-    , [BgtHl]
-    , (SELECT TOP(1)
-        [BgtHl]
-    FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
-        AND w1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
-        AND w1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END 
-        ) AS PrevWeekBgtHl1    
+    , [BgtHl] 
     , SalesHl
     , (SELECT TOP(1)
         SalesHl
@@ -135,6 +128,20 @@ SELECT
                             WHEN (t.Week - 2) = 0 THEN 52 
                             ELSE 51  END 
         ) AS PrevWeekSalesHl2
+    , (SELECT TOP(1)
+        SalesHl
+    FROM @Temp AS w1
+    WHERE w1.SkuShort = t.SkuShort
+        AND w1.[Year] = t.[Year] - 1
+        AND w1.[Week] = CASE WHEN t.Week <= 52 THEN t.Week ELSE 52  END 
+        ) AS PrevYearSalesHl1
+    ,(SELECT TOP(1)
+        SalesHl
+    FROM @Temp AS w1
+    WHERE w1.SkuShort = t.SkuShort
+        AND w1.[Year] = t.[Year] - 2
+        AND w1.[Week] = CASE WHEN t.Week <= 52 THEN t.Week ELSE 52  END 
+        ) AS PrevYearSalesHl2
     , [OldPredSalesHl]
 FROM @Temp AS t
 --WHERE [Year] NOT IN (2018, 2021)
