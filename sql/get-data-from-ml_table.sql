@@ -78,8 +78,8 @@ FROM (SELECT mlt.[Country]
         mlt.[DP_SKU] IS NOT NULL
         AND mlt.[PrimaryPack] IS NOT NULL
         AND mlt.[Sales_HL] IS NOT NULL
-        AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
-        --AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
+        --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
+        AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
 --WHERE  
     
