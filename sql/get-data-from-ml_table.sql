@@ -72,77 +72,77 @@ FROM (SELECT mlt.[Country]
         ELSE 0  
         END AS 'IsLockdown'
     FROM [FC_Tool].[dbo].[ML_Table] AS mlt
-    INNER JOIN [FC_Tool].[dbo].[ML_Weather] AS mlw ON mlw.[Calweek] = mlt.[Calweek]
+        INNER JOIN [FC_Tool].[dbo].[ML_Weather] AS mlw ON mlw.[Calweek] = mlt.[Calweek]
     WHERE 
         --mlt.[Country] = 'CZ' AND
         mlt.[DP_SKU] IS NOT NULL
         AND mlt.[PrimaryPack] IS NOT NULL
         AND mlt.[Sales_HL] IS NOT NULL
-        --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
-        AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
+        AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
+        --AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
 --WHERE  
-    
-    --AND SHORT_SKU IN ('06892') --'11276','02605', '02115', '06892'
-    --AND [Year] < 2021
+
+--AND SHORT_SKU IN ('06892') --'11276','02605', '02115', '06892'
+--AND [Year] < 2021
 GROUP BY t.[Country], t.[Year], t.[Week], t.[Workdays], t.SHORT_SKU, t.IsLockdown, t.[ProductGroup], t.[PrimaryPack]
 
 
 --SELECT * FROM @Temp
 
 SELECT
-    [SkuShort]
-    , [ProductGroup]
-    , [PrimaryPack]
-    , [Country]
-    , [Year] 
-    , [Week]
-    , [NumberWorkdays]
-    , [AvgTemp]
-    , [AvgRain]
-    , [AvgSun]
-    , [IsLockdown]
-    , [PdtHl]
+    t.[SkuShort]
+    , t.[ProductGroup]
+    , t.[PrimaryPack]
+    , t.[Country]
+    , t.[Year] 
+    , t.[Week]
+    , t.[NumberWorkdays]
+    , t.[AvgTemp]
+    , pw1.AvgTemp AS PrevWeekAvgTemp
+    , t.[AvgRain]
+    , pw1.AvgRain AS PrevWeekAvgRain
+    , t.[AvgSun]
+    , pw1.AvgSun AS PrevWeekAvgSun
+    , t.[IsLockdown]
+    , t.[PdtHl]
+    , pw1.PdtHl AS PrevWeekPdtHl1
+    , t.[BgtHl] 
+    , t.SalesHl
+    , pw1.SalesHl AS PrevWeekSalesHl1
     , (SELECT TOP(1)
-        [PdtHl]
+        w1.SalesHl
     FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
-        AND w1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
-        AND w1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END 
-        ) AS PrevWeekPdtHl1
-    , [BgtHl] 
-    , SalesHl
-    , (SELECT TOP(1)
-        SalesHl
-    FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
-        AND w1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
-        AND w1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END 
-        ) AS PrevWeekSalesHl1
-    , (SELECT TOP(1)
-        SalesHl
-    FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
+    WHERE 
+        w1.[Country] = t.[Country]
+        AND w1.SkuShort = t.SkuShort
         AND w1.[Year] = CASE WHEN (t.Week - 2) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
         AND w1.[Week] = CASE WHEN (t.Week - 2) > 0 THEN (t.Week -2) 
                             WHEN (t.Week - 2) = 0 THEN 52 
                             ELSE 51  END 
         ) AS PrevWeekSalesHl2
     , (SELECT TOP(1)
-        SalesHl
+        w1.SalesHl
     FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
+    WHERE 
+        w1.[Country] = t.[Country]
+        AND w1.SkuShort = t.SkuShort
         AND w1.[Year] = t.[Year] - 1
         AND w1.[Week] = CASE WHEN t.Week <= 52 THEN t.Week ELSE 52  END 
         ) AS PrevYearSalesHl1
-    ,(SELECT TOP(1)
-        SalesHl
+    , (SELECT TOP(1)
+        w1.SalesHl
     FROM @Temp AS w1
-    WHERE w1.SkuShort = t.SkuShort
+    WHERE 
+        w1.[Country] = t.[Country]
+        AND w1.SkuShort = t.SkuShort
         AND w1.[Year] = t.[Year] - 2
         AND w1.[Week] = CASE WHEN t.Week <= 52 THEN t.Week ELSE 52  END 
         ) AS PrevYearSalesHl2
-    , [OldPredSalesHl]
+    , t.[OldPredSalesHl]
 FROM @Temp AS t
---WHERE [Year] NOT IN (2018, 2021)
-ORDER BY  [Country], [Year], [Week]
+    LEFT JOIN @Temp AS pw1 ON pw1.[Country] = t.[Country]
+        AND pw1.SkuShort = t.SkuShort
+        AND pw1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
+        AND pw1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END
+ORDER BY  t.[Country], t.[Year], t.[Week]
