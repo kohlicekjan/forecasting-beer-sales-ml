@@ -73,11 +73,13 @@ FROM (SELECT mlt.[Country]
       , CASE 
         WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 12 AND 21 THEN 1
         WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 42 AND 53  THEN 1
-        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2021 THEN 1
+        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2021 AND mlt.[Week] BETWEEN 1 AND 20  THEN 1
+        WHEN mlt.[Country] = 'CZ' AND mlt.[Year] = 2021 THEN 0
 
         WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 12 AND 21 THEN 1
         WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2020 AND mlt.[Week] BETWEEN 42 AND 53  THEN 1
-        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2021 THEN 1
+        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2021 AND mlt.[Week] BETWEEN 1 AND 20 THEN 1
+        WHEN mlt.[Country] = 'SK' AND mlt.[Year] = 2021 THEN 0
         ELSE 0  
         END AS 'IsLockdown'
     FROM [FC_Tool].[dbo].[ML_Table] AS mlt
