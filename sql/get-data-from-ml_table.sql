@@ -28,7 +28,7 @@ INSERT INTO @Temp
     -- [ProductGroup], 
     -- [PrimaryPack], 
     [Country], [Year], [Week], [NumberWorkdays], [AvgTemp], [AvgRain], [AvgSun], [IsLockdown], [PdtHl], [BgtHl], [OldPredSalesHl], [SalesHl])
-SELECT --t.*
+SELECT
     t.SHORT_SKU
     , t.[Brand]
     -- , t.[SubBrand]
@@ -62,8 +62,8 @@ FROM (SELECT mlt.[Country]
     --   , mlt.[PrimaryPack]
       , mlt.[LF1_HL]
       , mlt.[Sales_HL] 
-      , CASE WHEN mlt.[Sales_HL] > 0 THEN mlt.[Sales_HL]   
-        ELSE 0  
+      , CASE WHEN mlt.[Sales_HL] <= 0 THEN NULL
+        ELSE mlt.[Sales_HL]  
         END AS 'SalesHl'
       , mlt.[PDT_HL]
       , mlt.[BGT_HL]
@@ -85,12 +85,12 @@ FROM (SELECT mlt.[Country]
     FROM [FC_Tool].[dbo].[ML_Table] AS mlt
         INNER JOIN [FC_Tool].[dbo].[ML_Weather] AS mlw ON mlw.[Calweek] = mlt.[Calweek]
     WHERE 
-        --mlt.[Country] = 'CZ' AND
-        mlt.[DP_SKU] IS NOT NULL
+        (mlt.[Year] <= 2020 OR (mlt.[Year] = 2021 AND mlt.[Week] <= 24))
+        AND mlt.[DP_SKU] IS NOT NULL
         AND mlt.[PrimaryPack] IS NOT NULL
-        AND mlt.[Sales_HL] IS NOT NULL
-        AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
-        --AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
+        --AND mlt.[Sales_HL] IS NOT NULL
+        --AND [PrimaryPack] IN ('KEG WOODEN', 'KEG', 'KEG ONE WAY', 'TANK') --ON-TRADE
+        AND [PrimaryPack] IN ('NRB', 'CAN', 'RB', 'PET') --OFF-TRADE
   ) AS t
 GROUP BY t.[Country], t.[Year], t.[Week], t.[Workdays], t.SHORT_SKU, t.IsLockdown , t.[Brand]--, t.[PrimaryPack], t.[ProductGroup], t.[SubBrand], 
 
@@ -149,6 +149,7 @@ FROM @Temp AS t
         AND pw1.SkuShort = t.SkuShort
         AND pw1.[Year] = CASE WHEN (t.Week - 1) > 0 THEN t.[Year] ELSE t.[Year] - 1 END
         AND pw1.[Week] = CASE WHEN (t.Week - 1) > 0 THEN (t.Week - 1) ELSE 52  END
+
 ORDER BY t.[Year], t.[Week], t.SkuShort, t.[Country]
 
 
